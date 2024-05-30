@@ -36,6 +36,12 @@ if(userInput != null && userInput.matches("^[a-zA-Z0-9]+$")) {
 
 🔍 **Logging y Monitoreo**: Implementa un sistema de logging para detectar incidentes de seguridad.
 
+
+## **Repositorio Presentaciones Power Point** 🔍 🔍
+
+[Curso_SeguridadDesarrollo_SW](https://1drv.ms/f/s!AuXx-8kTN1f3iKxOuaHsTQbHkuPEag?e=xYmWje)
+
+
 ## 📈 Modelado UML
 
 🔍 **Diagrama de Casos de Uso**: Modela interacciones de seguridad entre actores y el sistema.
