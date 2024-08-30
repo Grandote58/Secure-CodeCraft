@@ -1,0 +1,28 @@
+/* Estilos generales */
+body {
+    background-color: #f8f9fa;
+}
+
+/* Estilo para el contenedor principal */
+.container {
+    margin-top: 50px;
+    max-width: 500px;
+}
+
+/* Estilos para el formulario */
+form {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Estilo para los botones */
+.btn-custom {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+.btn-custom:hover {
+    background-color: #0056b3;
+}
