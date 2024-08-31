@@ -592,3 +592,88 @@ header("location: login.php");
 exit;
 ?>
 ```
+
+### 9. `conexionesip.php`
+
+Script para almacenar las conexiones que halla realizado un usuario.
+
+```php+HTML
+<?php
+// includes/conexionesip.php
+
+/**
+ * Este script guarda los datos de la conexión del usuario en la base de datos.
+ * Debe ser llamado después de un inicio de sesión exitoso.
+ */
+
+function registrarConexion($conn, $id_usuario) {
+    // Obtener la IP del usuario
+    $ip_conexion = $_SERVER['REMOTE_ADDR'];
+
+    // Obtener la fecha y hora actual
+    $fecha_conexion = date("Y-m-d H:i:s");
+
+    // Obtener el navegador del usuario
+    $navegador = getBrowser();
+
+    // Obtener el sistema operativo del usuario
+    $sistema_operativo = getOS();
+
+    // Establecer un tiempo de conexión inicial (por ejemplo, 0 segundos)
+    $tiempo_conexion = 0; // Esto puede actualizarse más tarde si se requiere.
+
+    // Insertar los datos en la tabla Conexión
+    $sql = "INSERT INTO Conexión (id_usuario, ip_conexion, fecha_conexion, tiempo_conexion, navegador, sistema_operativo) 
+            VALUES (?, ?, ?, ?, ?, ?)";
+
+    if ($stmt = $conn->prepare($sql)) {
+        $stmt->bind_param("ississ", $id_usuario, $ip_conexion, $fecha_conexion, $tiempo_conexion, $navegador, $sistema_operativo);
+        $stmt->execute();
+        $stmt->close();
+    } else {
+        error_log("Error al registrar la conexión: " . $conn->error);
+    }
+}
+
+/**
+ * Función para obtener el navegador del usuario.
+ */
+function getBrowser() {
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    if (strpos($user_agent, 'MSIE') !== FALSE) {
+        return "Internet Explorer";
+    } elseif (strpos($user_agent, 'Firefox') !== FALSE) {
+        return "Firefox";
+    } elseif (strpos($user_agent, 'Chrome') !== FALSE) {
+        return "Chrome";
+    } elseif (strpos($user_agent, 'Safari') !== FALSE) {
+        return "Safari";
+    } elseif (strpos($user_agent, 'Opera') !== FALSE) {
+        return "Opera";
+    } else {
+        return "Otros";
+    }
+}
+
+/**
+ * Función para obtener el sistema operativo del usuario.
+ */
+function getOS() {
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    if (preg_match('/linux/i', $user_agent)) {
+        return 'Linux';
+    } elseif (preg_match('/macintosh|mac os x/i', $user_agent)) {
+        return 'Mac';
+    } elseif (preg_match('/windows|win32/i', $user_agent)) {
+        return 'Windows';
+    } else {
+        return 'Otros';
+    }
+}
+
+?>
+
+```
+
+
+
