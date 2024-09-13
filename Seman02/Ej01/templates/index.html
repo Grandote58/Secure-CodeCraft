@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Compras - Validación de Entradas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Gestión de Compras - Clientes</h2>
+
+        <!-- Formulario para agregar/actualizar clientes -->
+        <form id="formCliente" novalidate>
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" class="form-control" id="nombre" required>
+                <div class="invalid-feedback">El nombre es obligatorio y debe tener al menos 3 caracteres.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" required>
+                <div class="invalid-feedback">Introduce un email válido.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="telefono" class="form-label">Teléfono</label>
+                <input type="text" class="form-control" id="telefono">
+                <div class="invalid-feedback">El teléfono debe tener solo números y al menos 7 caracteres.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar Cliente</button>
+        </form>
+
+        <!-- Tabla para mostrar los clientes -->
+        <h3 class="mt-5">Lista de Clientes</h3>
+        <table class="table table-bordered mt-3" id="tablaClientes">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Las filas serán generadas dinámicamente -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Script para manejar las acciones CRUD y validación de entradas -->
+    <script>
+        const apiUrl = 'http://127.0.0.1:5000/customers';  // URL correcta del backend Flask
+        let currentClienteId = null; // Para saber si estamos creando o editando
+
+        // Cargar clientes iniciales
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarClientes();
+        });
+
+        // Función para cargar los clientes desde el servidor Flask
+        function cargarClientes() {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(clientes => {
+                    renderClientes(clientes);
+                })
+                .catch(error => {
+                    console.error('Error al cargar los clientes:', error);
+                });
+        }
+
+        // Función para renderizar los clientes en la tabla
+        function renderClientes(clientes) {
+            let tbody = document.getElementById("tablaClientes").querySelector("tbody");
+            tbody.innerHTML = ""; // Limpiar la tabla
+            clientes.forEach(cliente => {
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${cliente.id}</td>
+                    <td>${cliente.name}</td>
+                    <td>${cliente.email}</td>
+                    <td>${cliente.phone}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editarCliente(${cliente.id})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarCliente(${cliente.id})">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Manejar el evento de submit del formulario para agregar o actualizar un cliente
+        document.getElementById("formCliente").addEventListener("submit", function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            let form = this;
+            if (form.checkValidity()) {
+                const clienteData = {
+                    nombre: document.getElementById("nombre").value,
+                    email: document.getElementById("email").value,
+                    telefono: document.getElementById("telefono").value
+                };
+
+                if (currentClienteId === null) {
+                    // Crear nuevo cliente
+                    fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(clienteData)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al agregar cliente');
+                        }
+                        return response.json();
+                    })
+                    .then(() => {
+                        alert("Cliente agregado correctamente.");
+                        cargarClientes();
+                    })
+                    .catch(error => {
+                        console.error('Error al agregar cliente:', error);
+                    });
+                } else {
+                    // Actualizar cliente existente
+                    fetch(`${apiUrl}/${currentClienteId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(clienteData)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al actualizar cliente');
+                        }
+                        return response.json();
+                    })
+                    .then(() => {
+                        alert("Cliente actualizado correctamente.");
+                        cargarClientes();
+                    })
+                    .catch(error => {
+                        console.error('Error al actualizar cliente:', error);
+                    });
+                }
+                currentClienteId = null; // Restablecer
+                form.reset();
+            } else {
+                alert("Por favor, corrige los errores en el formulario.");
+            }
+            form.classList.add('was-validated');
+        });
+
+        // Función para editar un cliente
+        function editarCliente(id) {
+            fetch(`${apiUrl}/${id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al obtener cliente');
+                    }
+                    return response.json();
+                })
+                .then(cliente => {
+                    document.getElementById("nombre").value = cliente.name;
+                    document.getElementById("email").value = cliente.email;
+                    document.getElementById("telefono").value = cliente.phone;
+                    currentClienteId = cliente.id;
+                })
+                .catch(error => {
+                    console.error('Error al obtener cliente:', error);
+                });
+        }
+
+        // Función para eliminar un cliente
+        function eliminarCliente(id) {
+            if (confirm("¿Seguro que deseas eliminar este cliente?")) {
+                fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error al eliminar cliente');
+                        }
+                        return response.json();
+                    })
+                    .then(() => {
+                        alert("Cliente eliminado correctamente.");
+                        cargarClientes();
+                    })
+                    .catch(error => {
+                        console.error('Error al eliminar cliente:', error);
+                    });
+            }
+        }
+
+        // Validaciones adicionales para el teléfono
+        document.getElementById("telefono").addEventListener("input", function() {
+            if (isNaN(this.value) || this.value.length < 7) {
+                this.setCustomValidity("El teléfono debe ser un número válido con al menos 7 caracteres.");
+            } else {
+                this.setCustomValidity("");
+            }
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
